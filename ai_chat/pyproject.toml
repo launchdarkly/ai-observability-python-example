@@ -1,0 +1,27 @@
+[tool.poetry]
+name = "ai-chat-cli"
+version = "0.1.0"
+description = "A simple CLI application for chatting with OpenAI"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+openai = "^1.0.0"
+click = "^8.1.0"
+python-dotenv = "^1.0.0"
+rich = "^13.0.0"
+launchdarkly-server-sdk = "^9.12.0"
+launchdarkly-server-sdk-ai = "^0.10.0"
+launchdarkly-observability = "^0.1.0"
+opentelemetry-instrumentation-openai = "^0.40.14"
+watchdog = "^3.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+dev = "src.cli:main"
+watch = "src.dev:main"
