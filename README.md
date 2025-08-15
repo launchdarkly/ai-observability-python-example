@@ -16,13 +16,6 @@ This repository contains two Python projects demonstrating AI observability with
 
 A straightforward CLI chat interface with OpenAI's GPT models.
 
-### Features
-- Interactive chat with GPT models
-- LaunchDarkly AI Config integration
-- OpenTelemetry instrumentation
-- Conversation history management
-- Hot reload for development
-
 ### Setup
 ```bash
 # Navigate to the project
@@ -57,13 +50,6 @@ Available commands in chat:
 ## LangChain Tools Project
 
 A more advanced CLI tool with multiple AI capabilities using LangChain.
-
-### Features
-- Multiple tools including web search and calculator
-- LangChain ReAct agent integration
-- LaunchDarkly AI Config for agent customization
-- OpenTelemetry instrumentation for both LangChain and OpenAI
-- Hot reload for development
 
 ### Setup
 ```bash
