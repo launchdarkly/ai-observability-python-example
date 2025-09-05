@@ -11,10 +11,6 @@ from ldclient.config import Config
 from ldai.client import LDAIClient, AIConfig
 from ldobserve import ObservabilityConfig, ObservabilityPlugin, observe
 
-from opentelemetry.instrumentation.openai import OpenAIInstrumentor
-
-OpenAIInstrumentor().instrument()
-
 @dataclass
 class ChatMessage:
     role: str  # "system", "user", or "assistant"
@@ -49,17 +45,29 @@ class OpenAIClient:
         self.ai_client = None
         
         if self.ld_sdk_key:
+            print("🚀 Initializing LaunchDarkly with observability plugin...")
+            # Configure observability plugin according to official docs
+            observability_config = ObservabilityConfig(
+                service_name="ai-chat-cli",
+                service_version="0.1.0",
+                environment="staging"
+            )
+            plugin = ObservabilityPlugin(observability_config)
+            
+            # Use staging endpoints (like your Node.js version)
             config = Config(
                 sdk_key=self.ld_sdk_key,
-                plugins=[ObservabilityPlugin(ObservabilityConfig(
-                    service_name="ai-chat-cli",
-                    service_version="0.1.0",
-                    environment="development"
-                ))]
+                base_uri="https://ld-stg.launchdarkly.com/",
+                stream_uri="https://stream-stg.launchdarkly.com",
+                events_uri="https://events-stg.launchdarkly.com",
+                plugins=[plugin]
             )
             ldclient.set_config(config)
             self.ld_client = ldclient.get()
             self.ai_client = LDAIClient(self.ld_client)
+            print("✅ LaunchDarkly initialized successfully")
+        else:
+            print("⚠️  No LaunchDarkly SDK key provided - observability disabled")
     
     def add_message(self, role: str, content: str) -> None:
         self.conversation_history.append(ChatMessage(role=role, content=content))
@@ -68,19 +76,26 @@ class OpenAIClient:
             self.conversation_history = [self.conversation_history[0]] + self.conversation_history[-20:]
     
     def get_response(self, user_message: str) -> str:
-        with observe.start_span("get_openai_response"):
+        with observe.start_span("get_openai_response") as span:
+            print(f"🔍 LaunchDarkly span created: {span}")
+            print(f"🔍 Span context: {span.get_span_context()}")
             self.add_message("user", user_message)
             messages = [msg.to_dict() for msg in self.conversation_history]
             
             try:
                 if self.ai_client:
+                    print("🔍 Using LaunchDarkly AI client for tracing...")
                     context = Context.builder('user-key').build()
                     config, tracker = self.ai_client.config(
-                        "ai-observability-python-chat",
+                        "mccarthy-commerce-1",
                         context,
                         AIConfig(enabled=True),
                         {}
                     )
+                    print(f"🔍 AI Config enabled: {config.enabled}")
+                    print(f"🔍 AI Config messages: {len(config.messages) if config.messages else 0}")
+                    print(f"🔍 Tracker object: {tracker}")
+                    print(f"🔍 Tracker type: {type(tracker)}")
                     
                     if config.enabled and config.messages:
                         messages = [message.to_dict() for message in config.messages]
@@ -89,13 +104,45 @@ class OpenAIClient:
                         if config.model and config.model.name:
                             self.model = config.model.name
 
+                    print(f"🔍 Tracking OpenAI call with model: {self.model}")
+                    print(f"🔍 Messages being sent: {len(messages)}")
+                    
                     response = tracker.track_openai_metrics(lambda: 
                         self.client.chat.completions.create(
                             model=self.model,
                             messages=messages,
                         )
                     )
+                    
+                    print(f"🔍 OpenAI response received - tokens used: {response.usage.total_tokens if response.usage else 'unknown'}")
+                    
+                    # Try to get trace information from the tracker
+                    if hasattr(tracker, 'get_trace_id'):
+                        print(f"🔍 LaunchDarkly trace ID: {tracker.get_trace_id()}")
+                    if hasattr(tracker, 'trace_id'):
+                        print(f"🔍 LaunchDarkly trace ID (attr): {tracker.trace_id}")
+                    if hasattr(tracker, '_trace_id'):
+                        print(f"🔍 LaunchDarkly trace ID (private): {tracker._trace_id}")
+                    
+                    print(f"🔍 Tracker attributes: {dir(tracker)}")
+                    
+                    # Try to get the summary which might contain trace info
+                    try:
+                        summary = tracker.get_summary()
+                        print(f"🔍 Tracker summary: {summary}")
+                        if hasattr(summary, '__dict__'):
+                            print(f"🔍 Summary attributes: {summary.__dict__}")
+                    except Exception as e:
+                        print(f"🔍 Could not get tracker summary: {e}")
+                    
+                    # Check if there's a trace ID in the tracker's internal data
+                    try:
+                        track_data = tracker._LDAIConfigTracker__get_track_data()
+                        print(f"🔍 Tracker track data: {track_data}")
+                    except Exception as e:
+                        print(f"🔍 Could not get tracker track data: {e}")
                 else:
+                    print("⚠️  LaunchDarkly AI client not available - using basic OpenAI call")
                     response = self.client.chat.completions.create(
                         model=self.model,
                         messages=messages,
