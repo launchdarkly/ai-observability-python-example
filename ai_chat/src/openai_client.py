@@ -46,20 +46,48 @@ class OpenAIClient:
         
         if self.ld_sdk_key:
             print("🚀 Initializing LaunchDarkly with observability plugin...")
+
+            # Use environment variables for O11y config
+            backend_url = os.getenv("LD_BACKEND_URL")
+            otlp_endpoint = os.getenv("LD_OTLP_ENDPOINT")
+
+            if not backend_url:
+                print("❌ Error: LD_BACKEND_URL environment variable is required but not found")
+                raise ValueError("LD_BACKEND_URL environment variable is required")
+            if not otlp_endpoint:
+                print("❌ Error: LD_OTLP_ENDPOINT environment variable is required but not found")
+                raise ValueError("LD_OTLP_ENDPOINT environment variable is required")
+
             # Configure observability plugin according to official docs
             observability_config = ObservabilityConfig(
                 service_name="ai-chat-cli",
                 service_version="0.1.0",
-                environment="staging"
+                environment="staging",
+                backend_url=backend_url,
+                otlp_endpoint=otlp_endpoint
             )
             plugin = ObservabilityPlugin(observability_config)
             
-            # Use staging endpoints (like your Node.js version)
+            # Use environment variables for LaunchDarkly endpoints
+            base_uri = os.getenv("LD_BASE_URI")
+            stream_uri = os.getenv("LD_STREAM_URI")
+            events_uri = os.getenv("LD_EVENTS_URI")
+            
+            if not base_uri:
+                print("❌ Error: LD_BASE_URI environment variable is required but not found")
+                raise ValueError("LD_BASE_URI environment variable is required")
+            if not stream_uri:
+                print("❌ Error: LD_STREAM_URI environment variable is required but not found")
+                raise ValueError("LD_STREAM_URI environment variable is required")
+            if not events_uri:
+                print("❌ Error: LD_EVENTS_URI environment variable is required but not found")
+                raise ValueError("LD_EVENTS_URI environment variable is required")
+            
             config = Config(
                 sdk_key=self.ld_sdk_key,
-                base_uri="https://ld-stg.launchdarkly.com/",
-                stream_uri="https://stream-stg.launchdarkly.com",
-                events_uri="https://events-stg.launchdarkly.com",
+                base_uri=base_uri,
+                stream_uri=stream_uri,
+                events_uri=events_uri,
                 plugins=[plugin]
             )
             ldclient.set_config(config)
