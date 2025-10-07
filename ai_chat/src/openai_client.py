@@ -114,8 +114,14 @@ class OpenAIClient:
                 if self.ai_client:
                     print("🔍 Using LaunchDarkly AI client for tracing...")
                     context = Context.builder('user-key').build()
+                    
+                    # Get AI config key from environment variable
+                    ai_config_key = os.getenv("AI_CONFIG_KEY")
+                    if not ai_config_key:
+                        raise ValueError("AI_CONFIG_KEY environment variable is required")
+                    
                     config, tracker = self.ai_client.config(
-                        "mccarthy-commerce-1",
+                        ai_config_key,
                         context,
                         AIConfig(enabled=True),
                         {}
