@@ -25,6 +25,7 @@ watchdog = "^3.0.0"
 duckduckgo-search = ">=6"
 numexpr = "^2.8.7"
 pydantic = ">=2"
+ddgs = "^9.6.1"
 
 [build-system]
 requires = ["poetry-core"]

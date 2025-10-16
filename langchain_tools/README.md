@@ -6,8 +6,7 @@ A LangChain-based CLI tool with multiple tools and LaunchDarkly integration.
 
 ```bash
 # Create and activate virtual environment
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+python3 -m venv .venv && source .venv/bin/activate
 
 # Install dependencies
 poetry install
@@ -31,3 +30,11 @@ LAUNCHDARKLY_SDK_KEY=your_launchdarkly_sdk_key
 # Run the agent
 poetry run dev
 ```
+
+### Example Queries
+
+Once the agent is running, you can ask questions like:
+
+- "What is the current weather in San Francisco?"
+- "Calculate the square root of 144"
+- "What are the latest AI news headlines?"
