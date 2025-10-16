@@ -58,10 +58,15 @@ class LangChainAgent:
     def _setup_launchdarkly(self, sdk_key: str, context_key: str):
         config = Config(
             sdk_key=sdk_key,
+            base_uri="https://ld-stg.launchdarkly.com",
+            stream_uri="https://stream-stg.launchdarkly.com",
+            events_uri="https://events-stg.launchdarkly.com",
             plugins=[ObservabilityPlugin(ObservabilityConfig(
                 service_name="langchain-agent-cli",
                 service_version="0.1.0",
-                environment="development"
+                environment="development",
+                backend_url="https://pub.observability.ld-stg.launchdarkly.com",
+                otlp_endpoint="https://otel.observability.ld-stg.launchdarkly.com:4317"
             ))]
         )
         ldclient.set_config(config)
