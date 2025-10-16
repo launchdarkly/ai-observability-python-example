@@ -12,6 +12,10 @@ A CLI chat interface using OpenAI with LaunchDarkly AI Config and OpenTelemetry 
 
 ### Installation
 ```bash
+# Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
 # Install dependencies
 poetry install
 
